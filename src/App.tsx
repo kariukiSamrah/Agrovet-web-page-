@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { TopNoticeBar } from './components/TopNoticeBar';
 import { Header } from './components/Header';
+import { OfflineBanner } from './components/OfflineBanner';
 import { Hero } from './components/Hero';
 import { BenefitCards } from './components/BenefitCards';
 import { PopularCategories } from './components/PopularCategories';
@@ -37,10 +38,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900 font-sans selection:bg-emerald-100 selection:text-emerald-950">
+      {/* Offline Status Alert */}
+      <OfflineBanner />
+
       {/* 1. Top Notice Bar */}
       <TopNoticeBar />
 
-      {/* 2. Header with clean 3-zone contract */}
+      {/* 2. Header with clean 3-zone contract & PWA install action */}
       <Header onNavigate={scrollToSection} />
 
       {/* Main Content Area */}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, MessageSquare, Phone } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../data/business';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   onNavigate?: (sectionId: string) => void;
@@ -82,6 +83,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
 
         {/* Zone 3: Primary Action buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
+          <PWAInstallButton variant="header" />
+
           <a
             href={`tel:${BUSINESS_INFO.phoneTel}`}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-stone-700 hover:text-emerald-900 transition-colors"
@@ -155,6 +158,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
+            <PWAInstallButton variant="menu" />
             <a
               href={`tel:${BUSINESS_INFO.phoneTel}`}
               className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-stone-100 text-stone-800 font-semibold rounded-lg text-sm"

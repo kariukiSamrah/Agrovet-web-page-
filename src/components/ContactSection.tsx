@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Phone, MessageSquare, MapPin, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Clock, Send, CheckCircle2, AlertCircle, WifiOff, Smartphone } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../data/business';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 export const ContactSection: React.FC = () => {
+  const isOnline = useOnlineStatus();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [need, setNeed] = useState('Seeds & Planting Inputs');
@@ -21,12 +23,34 @@ export const ContactSection: React.FC = () => {
       return;
     }
     setError('');
+
+    // Persist to local storage for offline reliability
+    try {
+      const existing = JSON.parse(localStorage.getItem('nyeri_staged_enquiries') || '[]');
+      existing.push({
+        name,
+        phone,
+        need,
+        message,
+        timestamp: new Date().toISOString(),
+        offline: !isOnline,
+      });
+      localStorage.setItem('nyeri_staged_enquiries', JSON.stringify(existing));
+    } catch {
+      // Ignore localStorage errors
+    }
+
     setSubmitted(true);
   };
 
+  const enquiryText = `Hello Nyeri Farmers Agrovet, my name is ${name} (Phone: ${phone}). I need assistance with: [${need}]. Message: ${message || 'Please let me know current availability and pricing.'}`;
+  
   const getForwardWhatsAppUrl = () => {
-    const text = `Hello Nyeri Farmers Agrovet, my name is ${name} (Phone: ${phone}). I need assistance with: [${need}]. Message: ${message || 'Please let me know current availability and pricing.'}`;
-    return getWhatsAppUrl(text);
+    return getWhatsAppUrl(enquiryText);
+  };
+
+  const getSmsUrl = () => {
+    return `sms:${BUSINESS_INFO.phoneTel}?body=${encodeURIComponent(enquiryText)}`;
   };
 
   const handleReset = () => {
@@ -141,22 +165,45 @@ export const ContactSection: React.FC = () => {
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-xl font-bold text-stone-900">
-                  Enquiry Received!
+                  {isOnline ? 'Enquiry Received!' : 'Enquiry Saved Offline on Device!'}
                 </h3>
                 <p className="text-sm text-stone-600 max-w-md mx-auto">
-                  Thank you, <strong>{name}</strong>. We received your request regarding <strong>{need}</strong>. For the quickest immediate quote or confirmation of stock, you can send it directly to our WhatsApp with one click:
+                  {isOnline ? (
+                    <>Thank you, <strong>{name}</strong>. We received your request regarding <strong>{need}</strong>. For the quickest immediate quote or confirmation of stock, you can send it directly to our WhatsApp with one click:</>
+                  ) : (
+                    <>Thank you, <strong>{name}</strong>. Your enquiry regarding <strong>{need}</strong> has been saved on this device. Since you are currently offline, you can dispatch it immediately via standard cellular SMS or voice call:</>
+                  )}
                 </p>
 
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <a
-                    href={getForwardWhatsAppUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-                  >
-                    <MessageSquare className="w-4 h-4 text-emerald-200" />
-                    <span>Send Directly via WhatsApp</span>
-                  </a>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
+                  {!isOnline ? (
+                    <>
+                      <a
+                        href={getSmsUrl()}
+                        className="w-full sm:w-auto px-5 py-3 bg-amber-800 hover:bg-amber-900 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+                      >
+                        <Smartphone className="w-4 h-4 text-amber-200" />
+                        <span>Send via Cellular SMS (No Internet Needed)</span>
+                      </a>
+                      <a
+                        href={`tel:${BUSINESS_INFO.phoneTel}`}
+                        className="w-full sm:w-auto px-5 py-3 bg-stone-800 hover:bg-stone-900 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 transition-all"
+                      >
+                        <Phone className="w-4 h-4 text-emerald-400" />
+                        <span>Call Store: {BUSINESS_INFO.phoneDisplay}</span>
+                      </a>
+                    </>
+                  ) : (
+                    <a
+                      href={getForwardWhatsAppUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-6 py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+                    >
+                      <MessageSquare className="w-4 h-4 text-emerald-200" />
+                      <span>Send Directly via WhatsApp</span>
+                    </a>
+                  )}
 
                   <button
                     onClick={handleReset}
@@ -168,6 +215,12 @@ export const ContactSection: React.FC = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {!isOnline && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-xs text-amber-900 font-medium">
+                    <WifiOff className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>Offline: Form will save to this device with cellular SMS/Call backup.</span>
+                  </div>
+                )}
                 <div className="border-b border-stone-200 pb-3 mb-2">
                   <h3 className="text-lg font-bold text-stone-900">
                     Send an Enquiry
