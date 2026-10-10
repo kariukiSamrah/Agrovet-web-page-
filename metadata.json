@@ -1,0 +1,6 @@
+{
+  "name": "Nyeri Farmers Agrovet",
+  "description": "Quality farm inputs, certified seeds, animal-health products, and agricultural advice for farmers in Nyeri Town and Nyeri County, Kenya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
